@@ -32,12 +32,21 @@ async function getJiraTicketAndUpdatePr(pr) {
   const type = ticket.fields?.issuetype?.name.toLowerCase() == 'bug' ? 'bug' : 'feature';
   const fixVersion = ticket.fields?.fixVersions[0]?.name;
   const labels = [type];
-  if (fixVersion) labels.push(fixVersion);
+
   await octokit.rest.issues.addLabels({
     owner: config.repo_owner,
     repo: config.repo,
     issue_number: pr.id,
     labels: labels,
+  });
+
+  if fixVersion == "0" { return; } // Do not set milestone if fix veresion is 0
+
+  await octokit.rest.issues.update({
+    owner: config.repo_owner,
+    repo: config.repo,
+    issue_number: pr.id,
+    milestone: fixVersion,
   });
 }
 
